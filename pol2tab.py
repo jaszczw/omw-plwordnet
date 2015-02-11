@@ -34,7 +34,7 @@ log = codecs.open(outfile + '.log', "w", "utf-8" )
 o.write("# %s\t%s\t%s\t%s\n" % (wnname, wnlang, wnurl, wnlicense))
 
 #
-# Data is in the file plwordnet_2_0_visdic.xml 
+# Data is in the file plwordnet_2_2_visdic.xml 
 #
 # PWN synsets look like this
 # extract lemma, pos, sense to get PWN synset
