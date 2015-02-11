@@ -16,7 +16,7 @@ h = HTMLParser.HTMLParser()
 
 
 ### Change this!
-wndata = ""    # is run on the same folder
+wndata = ""
 
 wnname = "plWordNet" 
 wnurl =  "http://plwordnet.pwr.wroc.pl/wordnet/"
@@ -33,9 +33,8 @@ log = codecs.open(outfile + '.log', "w", "utf-8" )
 
 o.write("# %s\t%s\t%s\t%s\n" % (wnname, wnlang, wnurl, wnlicense))
 
-
 #
-# Data is in the file plwordnet_2_2_visdic.xml 
+# Data is in the file plwordnet_2_0_visdic.xml 
 #
 # PWN synsets look like this
 # extract lemma, pos, sense to get PWN synset
@@ -72,6 +71,7 @@ o.write("# %s\t%s\t%s\t%s\n" % (wnname, wnlang, wnurl, wnlicense))
 #   <DOMAIN>wytw =&gt; EN -&gt; wytwory ludzkie(nazwy)</DOMAIN>
 # </SYNSET>
 # 
+# 
 synset = str()
 lemma = str()
 ### need to do some cleanup, so store once to remove duplicate
@@ -103,8 +103,9 @@ for l in f:
     ##  interlingual inter-register synonymy
     ## 225 międzyjęzykowa_synonimia_częściowa_plWN-PWN: interlingual near-synonymy
     ## 208  Syn_plWN-PWN: interlingual synonymy
-    m = re.search(ur'<ILR>([^<]+)<TYPE>(międzyjęzykowa_synonimia_międzyrejestrowa_plWN-PWN|międzyjęzykowa_synonimia_częściowa_plWN-PWN|Syn_plWN-PWN)</TYPE></ILR>',l)
-    if(m):
+    ## 222 pot_odp_plWN-PWN): interlingual potential equivalent
+    i = re.finditer(ur'<ILR>([^<]+)<TYPE>(międzyjęzykowa_synonimia_międzyrejestrowa_plWN-PWN|międzyjęzykowa_synonimia_częściowa_plWN-PWN|Syn_plWN-PWN|pot_odp_plWN-PWN)</TYPE></ILR>',l)
+    for m in i:
         lnk[id].add(m.group(1))
     ## Lemmas
     i = re.finditer(r"<LITERAL>([^<]+)<SENSE>([^<]+)</SENSE></LITERAL>",l)
@@ -130,14 +131,14 @@ def getoffset (lemma, pos, sense):
     except:
         log.write("No offset found for %s.%s.%s\n" % (lemma.replace(' ', '_'), pos, sense))
         return ""
-
+    
 for id in sorted(wn):
     if id.endswith('pwn'):
         off = ""
         while (wn[id] and not off):
-             (lemma, pos, sense) = wn[id].pop()
-             off = getoffset(lemma, pos, sense)
-        if off and lnk[id]:
-            ln = lnk[id].pop()
-            for (lemma, pos, sense) in wn[ln]:
-                o.write("%s\t%s\t%s\n" % (off, 'pol:lemma', lemma))
+            (lemma, pos, sense) = wn[id].pop()
+            off = getoffset(lemma, pos, sense)
+            while(off and lnk[id]):
+                ln = lnk[id].pop()
+                for (lemma, pos, sense) in wn[ln]:
+                    o.write("%s\t%s\t%s\n" % (off, 'pol:lemma', lemma))
